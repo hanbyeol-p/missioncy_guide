@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>미션코드이썬 게임 가이드</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand" href="#/" aria-label="홈으로">
+        <img class="brand__logo" src="assets/img/logo.png" alt="로고" />
+        <div class="brand__text">미션코드이썬 게임 가이드</div>
+      </a>
+      <nav class="menu" id="topMenu">
+        <a class="tab" data-go="#/stage/1">스테이지1</a>
+        <a class="tab" data-go="#/stage/2">스테이지2</a>
+        <a class="tab" data-go="#/stage/3">스테이지3</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="app" class="container"></main>
+
+  <footer>copyright(c) 2025 All rights reserved by LetsLeapUp</footer>
+
+  <!-- Modal (공통) -->
+  <div id="modal" class="modal hidden" aria-hidden="true">
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__dialog" role="dialog" aria-modal="true">
+      <button class="modal__close" data-close aria-label="닫기">×</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script src="assets/data/media.js"></script>
+  <script src="assets/data/content.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
