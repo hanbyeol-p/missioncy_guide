@@ -13,8 +13,8 @@
 const TEXT = {
   1: {
     EASY: {
-      "1-1": { levels: {
-        1: { goal: "목표 지점에 도달하기", hint: "내가 바라보고 있는 방향에서 오른쪽 왼쪽을 구분하세요!" },
+      "1-1": { subtitle: "", levels: {
+        1: {  goal: "목표 지점에 도달하기", hint: "내가 바라보고 있는 방향에서 오른쪽 왼쪽을 구분하세요!" },
         2: { goal: "목표 지점에 도달하기", hint: "인수를 활용해 코드 라인 수를 줄여보세요!" },
         3: { goal: "보급품 3개 획득하기 \n목표지점에 도달하기", hint: "목표를 확인하여 보급품을 획득하면 조금 더 쉽게 통과할 수 있어요!" },
       }},
@@ -108,7 +108,7 @@ const TEXT = {
     HARD: {
       "2-1": { levels: {
         1: { goal: "1에서 30까지의 숫자 중 3의 배수를 순차적으로 프린트하기\n목표지점에 도달하기", hint: "range(시작 숫자, 마지막 숫자, 배수)를 적어 원하는 숫자를 프린트할 수 있어요!\nrange(4, 12, 2)의 경우 4, 6, 8, 10의 숫자를 출력할 수 있어요." },
-        2: { goal: "획득 정보를 합쳐서 획득한 숫자만큼 반복하여 프린트하기\n목표지점에 도달하기", hint: "컴퓨터 앞에서 획득한 정보를 number 변수에 저장해요!\nanswer 변수에 getInfo() 함수의 값을 추가해요!\ngetInfo()는 값을 반환하는 함수로 변수 선언 없이 사용할 수 있어요!" },
+        2: { goal: "획득 정보를 합쳐서 획득한 숫자만큼 반복하여 프린트하기\n목표지점에 도달하기", hint: "제일 왼쪽 컴퓨터에서는 숫자를 획득할 수 있고 나머지 컴퓨터에서는 문자 정보를 얻을 수 있어요!\n숫자는 getNumber(), 문자는 getInfo()를 사용해보아요!" },
         3: { goal: "획득한 숫자부터 0까지 1씩 감소하는 모든 숫자 순차적으로 프린트하기\n목표지점에 도달하기", hint: "컴퓨터에서 얻은 정보를 number 변수에 저장해요.\nrange() 괄호 안에 number에서 획득한 숫자부터 0까지 1씩 감소하도록 하려면 코드를 어떻게 작성해야할까요?\nrange(시작하는 수, 마지막 수 -1, 감소 단위)에 들어갈 정보를 입력해보세요!" },
       }},
       "2-2": { levels: {
@@ -200,9 +200,20 @@ const TEXT = {
 // 2) 이미지 경로 자동 생성 (규칙 적용)
 // ─────────────────────────────────────────────────────────────
 const MODE_KEY = { EASY: "e", NORMAL: "n", HARD: "h" };
-function levelImagePath(stageNo, courseId, mode, levelNo) {
+
+function levelImagePath(stageNo, courseId, mode, levelNo){
+  const sNo = String(Number(stageNo));          // "1" → "1"
+  const isFourth = /-4$/.test(courseId);        // 1-4, 2-4, 3-4 여부
+
+  // ✅ 1-4 / 2-4는 고정 파일명 (모드/레벨 없음)
+  if (isFourth && (sNo === "1" || sNo === "2")) {
+    return `assets/img/s${sNo}-4.png`;          // s1-4.png / s2-4.png
+  }
+
+  // 그 외는 기존 규칙 (예: s2-3_h_lv2.png)
+  const idx = String(courseId).split("-")[1];   // "1-3" → "3"
   const m = MODE_KEY[mode] || "e";
-  return `assets/img/s${courseId}_${m}_lv${levelNo}.png`;
+  return `assets/img/s${sNo}-${idx}_${m}_lv${levelNo}.png`;
 }
 
 /* (추가) 스테이지별 설명 */
@@ -233,34 +244,58 @@ function buildContent(TEXT_SRC) {
       const pages = {};
 
       courses.forEach((cid) => {
-        const entry = modeData[cid];
+        let entry = modeData[cid] || {};
 
-        // 안내 코스
-        if (entry && entry.type === "info") {
+        // ★ 단일 카드 축약표기 지원:
+        // levels가 없고 goal/hint만 있으면 레벨 1개짜리 코스로 변환
+        if (!entry.levels && (entry.goal || entry.hint)) {
+          entry = {
+            ...entry,
+            single: true,                 // (옵션) 표시 제어 플래그 – 안 써도 OK
+            levels: {
+              1: { goal: entry.goal || "", hint: entry.hint || "" }
+            }
+          };
+        }
+
+        // 기본 문구
+        const fallback = (entry.type === "info")
+          ? "안내 코스(레벨 없음)"
+          : "레벨 1–3";
+
+        // 안내 코스는 그대로 처리
+        if (entry.type === "info") {
           pages[cid] = {
             title: `스테이지 ${cid}`,
-            type: "info",
-            body: entry.body || ""
+            type : "info",
+            body : entry.body || "",
+            subtitle: entry.subtitle || ""
           };
           return;
         }
 
-        // 레벨(1~3) 코스
-        const lvMap = (entry && entry.levels) || {};
-        const levels = [1, 2, 3].map((n) => ({
-          no: n,
-          img: levelImagePath(stageNo, cid, mode, n),
-          goal:
-            (lvMap[n] && lvMap[n].goal) ||
-            `목표를 작성해 주세요 (S${stageNo}/${mode}/${cid}/L${n})`,
-          hint:
-            (lvMap[n] && lvMap[n].hint) ||
-            `힌트를 작성해 주세요 (S${stageNo}/${mode}/${cid}/L${n})`
-        }));
+        // 레벨 카드 생성
+        const lvMap = entry.levels || {};
+        const levels = Object.keys(lvMap).map(n => {
+          const no = Number(n);
+          return {
+            no,
+            img : levelImagePath(stageNo, cid, mode, no),
+            goal: lvMap[no]?.goal || "",
+            hint: lvMap[no]?.hint || ""
+          };
+        }).sort((a,b)=>a.no-b.no);
 
-        // (참고) 1-4 / 2-4는 TEXT에 info로 이미 정의됨
-        pages[cid] = { title: `스테이지 ${cid}`, type: "levels", levels };
+        pages[cid] = {
+          title: `스테이지 ${cid}`,
+          type : "levels",
+          levels,
+          subtitle: entry.subtitle || ""  // subtitle 없으면 공백(=표시 안 함)
+          // single: entry.single === true,  // (선택) 필요 시 저장
+        };
       });
+
+
 
       perMode[mode] = { courses, pages };
     });
@@ -272,7 +307,11 @@ function buildContent(TEXT_SRC) {
     };
   });
 
-  return CONTENT;
+  return CONTENT; 
+
+
+
+
 }
 
 // ─────────────────────────────────────────────────────────────

@@ -128,92 +128,7 @@ h1{ margin:0; font-size:clamp(28px,4.2vw,44px); line-height:1.1 }
 .crumbs a{color:var(--muted)}.sep{opacity:.5}
 footer{margin:60px 0 40px;color:var(--muted);text-align:center;font-size:13px}
 
-/*줄바꿈*/
-.meta, .modal-meta { white-space: pre-line; }
 
-/* Modal (centered & scrollable) */
-body.modal-open{ overflow:hidden; height:100vh }
-
-.modal{
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: grid;           /* ↔︎↕ 가운데 정렬 */
-  place-items: center;
-  padding: 6vh 2vw;        /* 화면 가장자리 여백 */
-}
-.modal.hidden{ display:none }
-
-.modal__backdrop{
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.6);
-  backdrop-filter: blur(2px);
-  z-index: 1;              /* 다이얼로그보다 뒤 */
-}
-
-.modal__dialog{
-  position: relative;      /* 기존 fixed/inset 제거 */
-  z-index: 2;
-  width: min(1000px, 92vw);
-  max-height: min(86vh, 86dvh);  /* 모바일 주소창 변화 대응 */
-  display: grid;
-  grid-template-rows: auto 1fr;
-  background: #0f1730;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: var(--shadow);
-  overflow: hidden;        /* 내부 스크롤만 허용 */
-}
-
-.modal__close{
-  position: absolute;
-  top: 8px; right: 12px;
-  background: transparent; border: 0;
-  color: #fff; font-size: 28px; line-height: 1;
-  cursor: pointer;
-}
-
-#modalBody{
-  overflow: auto;          /* 내용이 많으면 모달 내부만 스크롤 */
-  padding: 16px;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* 내용 & 이미지 크기 제한 (화면 안에 맞춤) */
-.modal-content{
-  display: grid;
-  gap: 12px;
-  justify-items: center;
-}
-.modal-content img{
-  width: auto;
-  max-width: calc(92vw - 48px); /* 좌우 여백 감안한 최대 가로 */
-  max-height: 70vh;             /* 화면 70%를 넘지 않게 */
-  height: auto;
-  object-fit: contain;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-}
-
-@media (max-width: 760px){
-  .modal{ padding: 5vh 2vw; }
-  .modal__dialog{
-    width: 96vw;
-    max-height: min(88vh, 88dvh);
-  }
-  .modal-content img{
-    max-width: calc(96vw - 36px);
-    max-height: 58vh;
-  }
-}
-
-.modal-meta{
-  display:grid; gap:8px; padding:12px;
-  border:1px dashed var(--border); border-radius:12px;
-  background: rgba(255,255,255,.03)
-}
-.modal-meta h4{ margin:0; color:var(--accent) }
 
 /* === Mode star rating === */
 .stars{
@@ -234,7 +149,6 @@ body.modal-open{ overflow:hidden; height:100vh }
 /*=========================*/
 /* 카드 자체를 위치 기준과 블록 박스로 */
 .card{ display:block; }                /* a.card 도형화 */
-.card.mode{ position:relative; }       /* 뱃지 absolute 기준 */
 
 /* 뱃지를 카드 좌상단으로 고정 */
 .card.mode .badge{
@@ -243,8 +157,14 @@ body.modal-open{ overflow:hidden; height:100vh }
   z-index:2;
 }
 
-/* (이전 레이아웃 잔재가 있다면 제거) */
-.card.mode .thumb{ display:none !important; }
+
+/* 상단 썸네일 영역은 공간 차지하지 않도록 */
+.card.mode .thumb{
+  height: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+}
 
 /*=========================*/
 /*=============아래 삭제?===========*/
@@ -259,21 +179,8 @@ body.modal-open{ overflow:hidden; height:100vh }
     linear-gradient(180deg, rgba(10,39,66,.70), rgba(9,22,48,.88));
 }
 
-/* 상단 썸네일 영역은 공간 차지하지 않도록 */
-.card.mode .thumb{
-  height: 0;
-  padding: 0;
-  margin: 0;
-  background: transparent;
-}
-.card.mode .thumb::after{ display: none; }  /* 점선 박스 제거 */
 
-/* STAGE 뱃지는 카드 좌상단에 떠 있게 (레이아웃 영향 X) */
-.card.mode .badge{
-  position: absolute;
-  top: 10px;
-  left: 10px;
-}
+.card.mode .thumb::after{ display: none; }  /* 점선 박스 제거 */
 
 /* 본문 텍스트/별을 정확히 중앙 정렬 */
 .card.mode .body{
@@ -291,3 +198,114 @@ body.modal-open{ overflow:hidden; height:100vh }
 
 /* 별 간격 */
 .stars{ margin: 4px 0 0; }
+
+
+/* ===== Modal (fixed size & site mood) ===== */
+.modal{
+  position: fixed; inset: 0; z-index: 9999;
+  display: grid; place-items: center;
+  padding: 6vh 2vw;               /* 바깥 여백 */
+}
+.modal.hidden{ display:none; }
+
+.modal__backdrop{
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(2px);
+  z-index: 1;
+}
+
+/* 모달 크기(고정값 느낌) + 내부에서 참조할 높이 변수 */
+.modal__dialog{
+  --modal-w: clamp(820px, 88vw, 1100px);
+  --modal-h: min(88vh, 88dvh);
+  width: var(--modal-w);
+  height: var(--modal-h);
+  position: relative; z-index: 2;
+  display: grid; grid-template-rows: auto 1fr;   /* header(닫기) + body */
+  background:#0f1730; border:1px solid var(--border);
+  border-radius:16px; box-shadow:var(--shadow);
+  overflow: hidden;                                /* 바깥 넘침 방지 */
+}
+
+.modal__close{
+  position: absolute; top: 8px; right: 12px;
+  background: transparent; border: 0;
+  color: #fff; font-size: 28px; line-height: 1;
+  cursor: pointer; z-index: 3;
+}
+
+/* 모달 내부 스크롤 영역 (사이트 무드에 맞춰 스크롤 커스텀) */
+#modalBody{
+  height: 100%;
+  overflow-y: auto;                 /* ← 세로 스크롤은 여기에 */
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 12px 18px;
+}
+
+/* 커스텀 스크롤바 (WebKit) */
+#modalBody::-webkit-scrollbar{ width: 10px; }
+#modalBody::-webkit-scrollbar-track{
+  background: #0b1430; border:1px solid var(--border); border-radius: 10px;
+}
+#modalBody::-webkit-scrollbar-thumb{
+  background: linear-gradient(180deg, rgba(0,209,255,.75), rgba(126,249,255,.45));
+  border:1px solid rgba(0,209,255,.35);
+  border-radius: 10px;
+  box-shadow: 0 0 8px rgba(0,209,255,.25);
+}
+#modalBody{ scrollbar-width: thin; scrollbar-color: rgba(0,209,255,.6) #0b1430; }  /* Firefox */
+
+/* 콘텐츠 래퍼 (모달 안쪽 가로폭) */
+.modal-inner{
+  width: min(980px, calc(var(--modal-w) - 32px));
+  margin: 0 auto;
+  display: grid;
+  grid-template-rows: auto auto;    /* 이미지 블럭 + 텍스트 박스 */
+  row-gap: 12px;
+}
+
+/* 이미지 박스: 가운데 정렬 + 너비 맞춤 + 세로는 모달 높이의 2/3 제한 */
+.modal-media{
+  display:grid; place-items:center;
+}
+.modal-media img{
+  display:block;
+  max-width: 100%;          /* 가로는 컨테이너에 맞춤 */
+  height: auto;             /* 비율 유지 */
+  max-height: calc(var(--modal-h) * .66); /* 세로가 모달의 2/3을 넘지 않게 */
+  object-fit: contain;      /* 안전하게 축소 */
+  object-position: center;
+  border-radius:12px;
+  border:1px solid var(--border);
+}
+
+/* 텍스트 박스: 이미지 아래, 모달보다 살짝 여유 있는 폭 */
+.modal-meta{
+  width: calc(100% - 12px);     /* 좌우 여유 */
+  margin: 0 auto;
+  display: grid; gap: 14px;
+  padding: 14px 16px;
+  border:1px dashed var(--border); border-radius:12px;
+  background: rgba(255,255,255,.03);
+}
+
+/* 목표·힌트 라벨 + 내용(줄바꿈/탭 유지) */
+.modal-meta .label{
+  display:block; font-weight:800; margin: 0 0 6px;
+}
+.modal-meta .label.goal{ color: var(--accent); }
+.modal-meta .label.hint{ color: var(--accent); }   /* 요청대로 동일 톤 */
+.modal-meta .text{
+  white-space: pre-wrap; tab-size: 2; line-height: 1.65;
+}
+
+/* 모바일 최적화 */
+@media (max-width:760px){
+  .modal{ padding: 5vh 2vw; }
+  .modal__dialog{
+    --modal-w: 96vw; --modal-h: min(90vh, 90dvh);
+  }
+  .modal-inner{ width: calc(var(--modal-w) - 24px); }
+  .modal-media img{ max-height: calc(var(--modal-h) * .66); }
+}
