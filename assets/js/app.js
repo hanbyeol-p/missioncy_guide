@@ -54,6 +54,8 @@ function Stage(stageNo){
   const s = CONTENT.stages[stageNo];
   if(!s) return NotFound();
 
+  const desc = s.desc || "난이도(EASY/NORMAL/HARD)에 관계없이 동일한 스테이지 이미지를 사용합니다."; // 기본 문구(없을 때)
+
   const banner = `
     <section class="stage-hero">
       <div class="stage-hero__media">
@@ -61,7 +63,7 @@ function Stage(stageNo){
       </div>
       <div class="stage-hero__body">
         <h2>스테이지 ${stageNo}</h2>
-        <p class="muted">난이도(EASY/NORMAL/HARD)에 관계없이 동일한 스테이지 이미지를 사용합니다.</p>
+        <p class="muted">${escapeHtml(desc)}</p>
         <div class="pill">EASY</div><div class="pill">NORMAL</div><div class="pill">HARD</div>
       </div>
     </section>`;
@@ -140,9 +142,23 @@ function NotFound(){ return `<div style="padding:40px 0;text-align:center"><h2>�
 function Card({title,desc,badge,img,click}){
   return `<a class="card" href="${click}"><div class="thumb"><img src="${img}" alt=""><span class="badge">${badge||''}</span></div><div class="body"><div class="title">${title}</div><div class="muted">${desc||''}</div></div></a>`;
 }
-function CardMode({title,desc,badge,click}){
-  return `<a class="card mode" href="${click}"><div class="thumb"><span class="badge">${badge||''}</span></div><div class="body"><div class="title">${title}</div><div class="muted">${desc||''}</div></div></a>`;
+// 교체
+function CardMode({ title, desc, badge, click }){
+  const ratingMap = { EASY:1, NORMAL:3, HARD:5 };
+  const stars = `<div class="stars">${'<i class="star"></i>'.repeat(ratingMap[title]||0)}</div>`;
+
+  return `
+    <a class="card mode" href="${click}">
+      <span class="badge">${badge || ''}</span>   <!-- ★ 카드의 직속 자식 -->
+      <div class="body">
+        <div class="title">${title}</div>
+        ${stars}
+        <div class="muted">${desc || ''}</div>
+      </div>
+    </a>`;
 }
+
+
 function Crumbs(items){
   const html = items.map((it,i)=>{
     const link = it.href ? `<a href="${it.href}">${it.label}</a>` : `<span>${it.label}</span>`;

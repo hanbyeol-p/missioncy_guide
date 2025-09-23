@@ -116,11 +116,6 @@ h1{ margin:0; font-size:clamp(28px,4.2vw,44px); line-height:1.1 }
 .body{padding:14px 16px;display:grid;gap:6px}
 .title{font-weight:800}.muted{color:var(--muted);font-size:14px}
 
-/* Mode card (no image) */
-.card.mode .thumb{height:120px;background:linear-gradient(135deg,rgba(0,209,255,.25),rgba(0,0,0,.08));display:grid;place-items:center}
-.card.mode .thumb::after{content:"";width:64px;height:64px;border-radius:20px;border:2px dashed rgba(255,255,255,.35);opacity:.7}
-.card.mode .body{text-align:center}.card.mode .title{font-size:20px}
-
 /* Level page (no overlay text on image) */
 .level{display:grid;gap:12px}
 .level .thumb{height:auto;cursor:zoom-in}
@@ -219,3 +214,80 @@ body.modal-open{ overflow:hidden; height:100vh }
   background: rgba(255,255,255,.03)
 }
 .modal-meta h4{ margin:0; color:var(--accent) }
+
+/* === Mode star rating === */
+.stars{
+  display:flex; gap:6px; justify-content:center; align-items:center;
+  margin-top:6px;
+}
+.star{
+  width:16px; height:16px; display:inline-block;
+  /* 노란 글로우 느낌 */
+  background: linear-gradient(180deg, #ffd36e, #ffb02e 55%, #8a5c00);
+  filter: drop-shadow(0 0 6px rgba(255,176,46,.35));
+  opacity:.95;
+  /* 별 마스크 (SVG) */
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23000' d='M12 2.25l2.917 5.91 6.527.949-4.722 4.6 1.114 6.5L12 17.77l-5.836 3.44 1.114-6.5-4.722-4.6 6.527-.949L12 2.25z'/></svg>") center / contain no-repeat;
+          mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23000' d='M12 2.25l2.917 5.91 6.527.949-4.722 4.6 1.114 6.5L12 17.77l-5.836 3.44 1.114-6.5-4.722-4.6 6.527-.949L12 2.25z'/></svg>") center / contain no-repeat;
+}
+
+/*=========================*/
+/* 카드 자체를 위치 기준과 블록 박스로 */
+.card{ display:block; }                /* a.card 도형화 */
+.card.mode{ position:relative; }       /* 뱃지 absolute 기준 */
+
+/* 뱃지를 카드 좌상단으로 고정 */
+.card.mode .badge{
+  position:absolute;
+  top:10px; left:10px;
+  z-index:2;
+}
+
+/* (이전 레이아웃 잔재가 있다면 제거) */
+.card.mode .thumb{ display:none !important; }
+
+/*=========================*/
+/*=============아래 삭제?===========*/
+
+/* MODE card: 중앙 정렬 + 배지 절대배치 */
+.card.mode{
+  position:relative;
+  display:flex; flex-direction:column; justify-content:center; align-items:center;
+  gap:10px; padding:24px 16px; min-height:200px;
+  background:
+    radial-gradient(180% 120% at 0% 0%, rgba(0,209,255,.18), transparent 45%),
+    linear-gradient(180deg, rgba(10,39,66,.70), rgba(9,22,48,.88));
+}
+
+/* 상단 썸네일 영역은 공간 차지하지 않도록 */
+.card.mode .thumb{
+  height: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+}
+.card.mode .thumb::after{ display: none; }  /* 점선 박스 제거 */
+
+/* STAGE 뱃지는 카드 좌상단에 떠 있게 (레이아웃 영향 X) */
+.card.mode .badge{
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
+/* 본문 텍스트/별을 정확히 중앙 정렬 */
+.card.mode .body{
+  padding: 0;
+  margin: 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+.card.mode .title{ margin: 0; font-size: 20px; }
+.card.mode .muted{ margin: 0; }
+
+/* 별 간격 */
+.stars{ margin: 4px 0 0; }
